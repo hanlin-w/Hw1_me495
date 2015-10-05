@@ -1,0 +1,30 @@
+import rospy
+from geometry_msg.msg import Twist
+import math
+def controller ():
+    T = 1
+    pub = rospy.Publisher('turtle1/cmd_vel', Twist, queue_size=10)
+    rospy.init_node('controller', anonymous=True)
+    rate = rospy.Rate(10)  # 10hz
+    t1 = rospy.get_time();
+    while not rospy.is_shutdown():
+        while rospy.get_time() - t1 < T:
+            t = rospy.get_time() - t1
+            vx = math.sin(4 * math.pi / T * (rospy.get_time() - t1)) * (-1.0) * 4 * math.pi;
+            vy = math.cos(2 * math.pi / T * (rospy.get_time() - t1)) * (1.0) * 2 * math.pi;
+            msg = Twist()
+            msg.linear.x = math.sqrt(vx * vx + vy * vy)
+            msg.linear.y = vy
+            msg.linear.z = 0
+            msg.angular.x = 0
+            msg.angular.y = 0
+            msg.angular.z = 4 * math.pi * (-3.0 * math.cos(2 * pi * t / T) + math.cos(6 * math.pi * t / T)) / (T * (5 - math.cos(4 * math.pi * t / T) + 4 * math.cos(8 * math.pi * t / T)))
+
+        pub.publish(msg)
+        rate.sleep()
+
+if __name__ == '__main__':
+    try:
+        controller()
+    except rospy.ROSInterruptException:
+        pass

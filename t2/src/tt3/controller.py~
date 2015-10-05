@@ -1,0 +1,46 @@
+#!/usr/bin/env python
+import rospy
+import rosbag
+from std_msgs.msg import String
+from geometry_msgs.msg import Twist
+from turtlesim.srv import*
+import math
+
+
+def controller ():
+    rospy.init_node('controller', anonymous=True)
+    rospy.set_param("~test", 100)
+    pi = 3.1415926
+    fix = rospy.ServiceProxy("turtle1/teleport_absolute", TeleportAbsolute)
+    fix(5.5, 5.5, math.atan(0.5));
+    if rospy.has_param("~T"):
+       T = rospy.get_param("~T")
+       print(T)
+    else:
+       T = 10
+    pub = rospy.Publisher('turtle1/cmd_vel',Twist, queue_size=10)
+    rate = rospy.Rate(100)  # 10hz
+    t1 = rospy.get_time()
+    while not rospy.is_shutdown():
+        while rospy.get_time() - t1 < T:
+            t = rospy.get_time() - t1
+            vx = math.cos(4 * 3.1415926 / T * (rospy.get_time() - t1)) * (1.0) * 4 * 3.1415926 / T;
+            vy = math.cos(2 * 3.1415926 / T * (rospy.get_time() - t1)) * (1.0) * 2 * 3.1415926 / T;
+            msg = Twist()
+            msg.linear.x = math.sqrt(vx * vx + vy * vy)
+            msg.linear.y = vy
+            msg.linear.z = 0
+            msg.angular.x = 0
+            msg.angular.y = 0
+            msg.angular.z = 4 * pi / T * (3 * math.sin(2 * pi * t / T) + math.sin(6 * pi * t / T)) / (5 + math.cos(4 * pi * t / T) + 4 * math.cos(8 * pi * t / T))
+            pub.publish(msg)
+            rate.sleep()
+        msg.linear.x = 0
+        msg.angular.z = 0
+        pub.publish(msg)
+    
+if __name__ == '__main__':
+    try:
+        controller()
+    except rospy.ROSInterruptException:
+        pass

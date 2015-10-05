@@ -1,0 +1,14 @@
+<launch>
+  <group>
+    <node pkg="turtlesim" name="sim" type="turtlesim_node">
+    </node>
+    <node pkg="tt3" name="controller" type="controller.py">
+      <param name="T" type="double" value="10"/>
+    </node>
+    <node 
+       pkg="rosbag"
+       name="record"
+       type="record"
+       args="-O velocity.bag turtle1/cmd_vel"/>
+  </group>
+</launch>
